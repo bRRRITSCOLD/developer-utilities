@@ -44,6 +44,7 @@ export type StrongholdAtom = {
 // }
 
 const strongholdPluginSaltFileExistsQueryKey = 'strongholdPluginSaltFileExistsQuery'
+const strongholdPluginSaltFilePathQueryKey = 'strongholdPluginSaltFilePathQuery'
 
 // const baseFlatFilesSecrets: FlatFilesSecrets = {
 //   s3Endpoint: FLAT_FILES_S3_ENDPOINT,
@@ -68,6 +69,15 @@ export const useStronghold = () => {
     queryFn: async () => {
       return await stronghold.plugin.saltFileExists()
     },
+    retry: false
+  })
+
+  const strongholdPluginSaltFilePathQuery = useQuery({
+    queryKey: [strongholdPluginSaltFilePathQueryKey],
+    queryFn: async () => {
+      return await stronghold.plugin.saltFilePath()
+    },
+    retry: false
   })
 
   // Mutations
@@ -82,15 +92,16 @@ export const useStronghold = () => {
         }))
 
       } catch (err) {
-        error(`strongholdPluginInitMutation catch err ${(err as any).message}`)
+        throw err
       }
     },
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: [strongholdPluginSaltFileExistsQueryKey] })
+      queryClient.invalidateQueries({ queryKey: [strongholdPluginSaltFilePathQueryKey] })
     },
     onError: (err) => {
-      error(`strongholdPluginInitMutation onError err ${(err as any).message}`)
+      error(`strongholdPluginInitMutation onError err ${err}`)
     },
     scope: { id: `strongholdPluginInitMutation` },
   })
@@ -133,7 +144,8 @@ export const useStronghold = () => {
       ...stronghold,
     },
     queries: {
-      strongholdPluginSaltFileExistsQuery
+      strongholdPluginSaltFileExistsQuery,
+      strongholdPluginSaltFilePathQuery
     },
     mutations: {
       strongholdPluginInitMutation,

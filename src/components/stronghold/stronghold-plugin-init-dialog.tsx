@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { useStronghold } from "@/stores/stronghold"
 
 // SCHEMAS
-import { initStrongholdDialogFormSchema } from "@/schemas/stronghold";
+import { strongholdPluginInitDialogFormSchema } from "@/schemas/stronghold";
 
 // LIBS
 import { handleBlur, handleChange, handleFocus } from "@/lib/form";
@@ -21,7 +21,7 @@ import { CircleAlert, Eye, EyeOff } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 export function StrongholdPluginInitDialog() {
-  const { queries, mutations } = useStronghold()
+  const { state, queries, mutations } = useStronghold()
 
   const form = useForm({
     defaultValues: {
@@ -34,8 +34,8 @@ export function StrongholdPluginInitDialog() {
     },
     validatorAdapter: zodValidator(),
     validators: {
-      onChange: initStrongholdDialogFormSchema,
-      onSubmit: initStrongholdDialogFormSchema,
+      onChange: strongholdPluginInitDialogFormSchema,
+      onSubmit: strongholdPluginInitDialogFormSchema,
     }
   })
 
@@ -54,7 +54,7 @@ export function StrongholdPluginInitDialog() {
         <DialogHeader>
           <DialogTitle>Stronghold</DialogTitle>
           <DialogDescription>
-            Pick a salt .
+            Pick a salt {JSON.stringify(queries.strongholdPluginSaltFilePathQuery.data)}.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-1">
@@ -64,7 +64,7 @@ export function StrongholdPluginInitDialog() {
               children={(field) => (
                 <>
                   <Label htmlFor="salt" className="">
-                    Salt {JSON.stringify(queries.strongholdPluginSaltFileExistsQuery.data === undefined ? 'undefined' : queries.strongholdPluginSaltFileExistsQuery.data)}
+                    Salt
                   </Label>
 
                   <div className="relative col-span-3">
@@ -75,6 +75,7 @@ export function StrongholdPluginInitDialog() {
                       onBlur={handleBlur(field)}
                       onFocus={handleFocus(field)}
                       onChange={handleChange(field)}
+                      className="text-muted-foreground"
                     >
                       <div className="absolute -top-4 -right-4 flex cursor-pointer items-center text-red-400">
                         {field.state.meta.errorMap.onChange ? (

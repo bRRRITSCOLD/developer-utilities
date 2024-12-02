@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { useStronghold } from "@/stores/stronghold"
 
 // SCHEMAS
-import { initStrongholdDialogFormSchema } from "@/schemas/stronghold";
+import { strongholdPluginInitDialogFormSchema } from "@/schemas/stronghold";
 
 // LIBS
 import { handleBlur, handleChange, handleFocus } from "@/lib/form";
@@ -34,8 +34,8 @@ export function StrongholdPluginInitDialog() {
     },
     validatorAdapter: zodValidator(),
     validators: {
-      onChange: initStrongholdDialogFormSchema,
-      onSubmit: initStrongholdDialogFormSchema,
+      onChange: strongholdPluginInitDialogFormSchema,
+      onSubmit: strongholdPluginInitDialogFormSchema,
     }
   })
 

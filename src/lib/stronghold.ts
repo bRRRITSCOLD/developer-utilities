@@ -19,8 +19,8 @@ export class StrongholdPlugin extends Resource<StrongholdConnections, Stronghold
 
   public baseDir: BaseDirectory.AppLocalData = BaseDirectory.AppLocalData
 
-  public get saltPath () {
-    return `${appLocalDataDir()}/${this.saltFilename}`
+  public async saltFilePath () {
+    return `${await appLocalDataDir()}/${this.saltFilename}`
   }
 
   public async saltFileExists () {

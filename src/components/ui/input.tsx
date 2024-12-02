@@ -20,7 +20,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 )
 Input.displayName = "Input"
 
-function SensitiveTextInput <T>({ children = null, ...props }: T & { children?: React.ReactNode}) {
+function SensitiveTextInput <T>({ children = null, className, ...props }: T & { children?: React.ReactNode, className?: string; }) {
   const [showPassword, setShowPassword] = React.useState(false);
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -29,7 +29,7 @@ function SensitiveTextInput <T>({ children = null, ...props }: T & { children?: 
 
     <Input
       { ...props}
-      className="col-span-3 text-ellipsis overflow-hidden text-nowrap text-gray-300"
+      className={cn("col-span-3 text-ellipsis overflow-hidden text-nowrap text-gray-300", className)}
       type={showPassword ? "text" : "password"}
     />
     <div className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 text-gray-400">

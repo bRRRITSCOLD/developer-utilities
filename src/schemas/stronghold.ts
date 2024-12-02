@@ -1,5 +1,5 @@
 import { z } from 'zod'
 
-export const initStrongholdDialogFormSchema = z.object({
+export const strongholdPluginInitDialogFormSchema = z.object({
   salt: z.string().min(8)
 })
