@@ -15,10 +15,11 @@ function Index() {
   console.log(queries.strongholdPluginSaltFileExistsQuery.error)
   return (
     <div className="p-2">
+      asdfasfdsafasdf
       {
         queries.strongholdPluginSaltFileExistsQuery.error
           ? <div>{JSON.stringify(queries.strongholdPluginSaltFileExistsQuery.error)}</div>
-          : null
+          : <div>{JSON.stringify(queries.strongholdPluginSaltFilePathQuery.data)}</div>
       }
     </div>
   )

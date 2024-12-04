@@ -1,57 +1,78 @@
 import { Client, Stronghold as TauriStronghold } from '@tauri-apps/plugin-stronghold';
 import { appDataDir, appLocalDataDir } from '@tauri-apps/api/path';
-import { exists, BaseDirectory, writeFile } from '@tauri-apps/plugin-fs';
+import { exists, BaseDirectory, writeFile, mkdir } from '@tauri-apps/plugin-fs';
+import { info, error, trace } from '@tauri-apps/plugin-log';
+import { invoke } from '@tauri-apps/api/core';
 
 
 // libs
-import { Resource } from './resource';
-import { info, error } from '@tauri-apps/plugin-log';
-import { invoke } from '@tauri-apps/api/core';
+import { Resource, ResourceConstructorParams } from './resource';
+import { AppLocalDataDirectory } from './directory';
+import { InternalFile } from './file';
 
+export type StrongholdPluginConfig = { saltFilename: 'salt.txt'; baseDir: BaseDirectory.AppLocalData; };
 export type StrongholdPluginConnections = {};
 export type StrongholdPluginClients = {};
 export type StrongholdPluginResources = {};
 
-const INIT_STRONGHOLD_PLUGIN_COMMAND = 'initStrongholdPlugin'
+// commands
+export const STRONGHOLD_PLUGIN_INIT = 'stronghold_plugin_init'
 
-export class StrongholdPlugin extends Resource<StrongholdConnections, StrongholdClients, StrongholdResources> {
-  public saltFilename: 'salt.txt' = 'salt.txt'
+export class StrongholdPluginIpc {
+  public static async strongholdPluginInit () {
+    trace(`${STRONGHOLD_PLUGIN_INIT} command invoke...`)
 
-  public baseDir: BaseDirectory.AppLocalData = BaseDirectory.AppLocalData
+    return await invoke<void>(
+      STRONGHOLD_PLUGIN_INIT,
+    )
+  }
+}
 
-  public async saltFilePath () {
-    return `${await appLocalDataDir()}/${this.saltFilename}`
+export class StrongholdPlugin extends Resource<StrongholdPluginConfig, StrongholdPluginConnections, StrongholdPluginClients, StrongholdPluginResources> {
+  constructor () {
+    super({ config: { saltFilename: 'salt.txt', baseDir: BaseDirectory.AppLocalData } })
   }
 
-  public async saltFileExists () {
-    return await exists(this.saltFilename, {
-      baseDir: BaseDirectory.AppLocalData,
-    });
+  #vaultCache: Map<string, StrongholdVault> = new Map()
+
+  public async appLocalDataDirectory () {
+    return await AppLocalDataDirectory.init()
+  }
+
+  public async saltFile (salt?: string) {
+    return new InternalFile(
+      `salt.txt`,
+      (await this.appLocalDataDirectory()).path,
+      salt || ''
+    )
   }
 
   public async init (salt: string) {
-    if (!(await this.saltFileExists())) {
-      await writeFile(this.saltFilename, new Uint8Array(Array.from(new TextEncoder().encode(salt))), {
-        baseDir: this.baseDir,
-      });
+    const appLocalDataDirectory = await this.appLocalDataDirectory()
+  
+    if (!(await appLocalDataDirectory.exists())) {
+      trace('appLocalDataDirectory does not exist, mkdir...')
+
+      await appLocalDataDirectory.mkdir()
     }
 
-    const [result] = await Promise.allSettled([
-      invoke<void>(
-        INIT_STRONGHOLD_PLUGIN_COMMAND,
-        { salt }
-      )
-    ])
+    const saltFile = await this.saltFile(salt)
 
-    if (result.status === 'rejected') {
-      throw result.reason
+    if (!(await saltFile.exists())) {
+      trace('saltFile does not exist, writeFile...')
+
+      await saltFile.writeFile()
     }
 
-    return result.value
+    return await StrongholdPluginIpc.strongholdPluginInit()
   }
 
   async addVault (params: { name: string; password: string; }): Promise<StrongholdVault>  {
-    return new StrongholdVault({} as any)
+    const strongholdVault = await StrongholdVault.init(params)
+
+    this.#vaultCache.set(params.name, strongholdVault)
+
+    return strongholdVault
   }
 
   async getVaultNames (): Promise<string[]> {
@@ -67,27 +88,32 @@ export class StrongholdPlugin extends Resource<StrongholdConnections, Stronghold
   }
 }
 
+export type StrongholdVaultConfig = { name: string; vaultPath: string; };
 export type StrongholdVaultConnections = { stronghold: TauriStronghold; };
 export type StrongholdVaultClients = { stronghold: Client; };
 export type StrongholdVaultResources = {};
 
-export class StrongholdVault extends Resource<StrongholdVaultConnections, StrongholdVaultClients, StrongholdVaultResources> {
-  public static async vaultPath() {
-    return `${await appDataDir()}/vault.hold`;
+export class StrongholdVault extends Resource<StrongholdVaultConfig, StrongholdVaultConnections, StrongholdVaultClients, StrongholdVaultResources> {
+  constructor (params: ResourceConstructorParams<StrongholdVaultConfig, StrongholdVaultConnections, StrongholdVaultClients, StrongholdVaultResources>) {
+    super(params)
   }
 
-  public static async init(password: string) {
+  public static async init(params: { name: string, password: string }) {
+    const { name, password } = params
+
+    const vaultPath = `${await appDataDir()}/${name}.hold`;
+
     let stronghold: TauriStronghold
     try {
-      info('init before load')
-      stronghold = await TauriStronghold.load(await this.vaultPath(), password);
-      info('init after load')
+      stronghold = await TauriStronghold.load(vaultPath, password);
     } catch (err) {
       error(`init error ${(err as any).message}`)
+      
+      throw err
     }
   
     let client: Client;
-    const clientName = 'stronghold';
+    const clientName = name;
     try {
       client = await stronghold!.loadClient(clientName);
     } catch {
@@ -95,64 +121,34 @@ export class StrongholdVault extends Resource<StrongholdVaultConnections, Strong
     }
   
     return new StrongholdVault({
+      config: { name, vaultPath },
       connections: { stronghold: stronghold! },
       clients: { stronghold: client },
       resources: {}
     })
   }
-}
 
-export type StrongholdConnections = { strongholdPlugin: TauriStronghold; };
-export type StrongholdClients = { strongholdPlugin: Client; };
-export type StrongholdResources = {};
-
-export class Stronghold extends Resource<StrongholdConnections, StrongholdClients, StrongholdResources> {
-  public static async vaultPath() {
-    return `${await appDataDir()}/vault.hold`;
-  }
-
-  public static async init(password: string) {
-    let stronghold: TauriStronghold
-    try {
-      info('init before load')
-      stronghold = await TauriStronghold.load(await this.vaultPath(), password);
-      info('init after load')
-    } catch (err) {
-      error(`init error ${(err as any).message}`)
-    }
-  
-    let client: Client;
-    const clientName = 'stronghold';
-    try {
-      client = await stronghold!.loadClient(clientName);
-    } catch {
-      client = await stronghold!.createClient(clientName);
-    }
-  
-    return new Stronghold({
-      connections: { strongholdPlugin: stronghold! },
-      clients: { strongholdPlugin: client },
-      resources: {}
-    })
-  }
-
-  public constructor(params: { connections: StrongholdConnections; clients: StrongholdClients; resources: StrongholdResources }) {
-    super(params)
-  }
-
-  public async insertRecord(key: string, value: string): Promise<string> {
+  public async insertRecord(key: string, value: string): Promise<boolean> {
     const data = Array.from(new TextEncoder().encode(value));
-    await this.clients.strongholdPlugin.getStore().insert(key, data);
-    return value
+
+    await this.clients!.stronghold.getStore().insert(key, data);
+
+    return true
   }
 
   public async getRecord(key: string): Promise<string | null> {
-    const data = await this.clients.strongholdPlugin.getStore().get(key);
-    return data ? new TextDecoder().decode(new Uint8Array(data)) : data;
+    let data: Uint8Array | string | null = await this.clients!.stronghold.getStore().get(key);
+
+    if (data) {
+      data = new TextDecoder().decode(new Uint8Array(data))
+    }
+
+    return data;
   }
 
-  public async deleteRecord(key: string): Promise<string | null> {
-    const data = await this.clients.strongholdPlugin.getStore().remove(key);
-    return data ? new TextDecoder().decode(new Uint8Array(data)) : data;
+  public async deleteRecord(key: string): Promise<boolean> {
+    await this.clients!.stronghold.getStore().remove(key);
+
+    return true;
   }
 }

@@ -28,9 +28,11 @@ export function StrongholdPluginInitDialog() {
       salt: '',
     },
     onSubmit: async ({ value }) => {
-      await mutations.strongholdPluginInitMutation.mutateAsync(
-        value.salt
-      )
+      await Promise.allSettled([
+        mutations.strongholdPluginInitMutation.mutateAsync(
+          value.salt
+        )
+      ])
     },
     validatorAdapter: zodValidator(),
     validators: {
@@ -97,7 +99,7 @@ export function StrongholdPluginInitDialog() {
                   </Label>
 
                   <div className="relative col-span-3">
-                    <div className="absolute -top-4 -right-4 flex cursor-pointer items-center text-red-400">
+                    <div className="absolute -top-4 -right-4 flex cursor-pointer items-center">
                       {field.state.meta.errorMap.onChange ? (
                         <TooltipProvider>
                           <Tooltip delayDuration={0}>

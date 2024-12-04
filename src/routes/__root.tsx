@@ -6,16 +6,20 @@ import { useEffect } from 'react';
 import { warn, debug, trace, info, error } from '@tauri-apps/plugin-log';
 import { invoke } from '@tauri-apps/api/core';
 import { StrongholdPluginInitDialog } from '@/components/stronghold/stronghold-plugin-init-dialog';
+import { getCurrentWindow, Window } from '@tauri-apps/api/window';
 
 const __Root = () => {
-  const openWindow = async (window: WebviewWindow) => {
+  const openWindow = async (window: Window) => {
     if (!(await window.isVisible())) {
       window.show()
+      window.center()
+    } else {
+      window.center()
     }
   }
 
   useEffect(() => {
-    openWindow(getCurrentWebviewWindow())
+    openWindow(getCurrentWindow())
   }, [])
 
   return (
