@@ -11,11 +11,12 @@ import { getCurrentWindow, Window } from '@tauri-apps/api/window';
 const __Root = () => {
   const openWindow = async (window: Window) => {
     if (!(await window.isVisible())) {
-      window.show()
-      window.center()
+      await window.show()
+      await window.center()
     } else {
-      window.center()
+      await window.center()
     }
+    
   }
 
   useEffect(() => {
@@ -24,16 +25,6 @@ const __Root = () => {
 
   return (
     <>
-      <StrongholdPluginInitDialog/>
-      {/* <div className="p-2 flex gap-2">
-        <Link to="/" className="[&.active]:font-bold">
-          Home
-        </Link>{' '}
-        <Link to="/about" className="[&.active]:font-bold">
-          About
-        </Link>
-      </div>
-      <hr /> */}
       <Outlet />
     </>
   )

@@ -29,7 +29,7 @@ export function StrongholdPluginInitDialog() {
     },
     onSubmit: async ({ value }) => {
       await Promise.allSettled([
-        mutations.strongholdPluginInitMutation.mutateAsync(
+        mutations.pluginInitMutation.mutateAsync(
           value.salt
         )
       ])
@@ -67,32 +67,6 @@ export function StrongholdPluginInitDialog() {
             <form.Field
               name="salt"
               children={(field) => (
-                //   <div className="relative">
-                //     <input
-                //       type={showPassword ? "text" : "salt"}
-                //       className={cn(
-                //         "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-                //         className,
-                //       )}
-                //       ref={ref}
-                //       {...props}
-                //     />
-                //       <div className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 text-gray-400">
-                //     {showPassword ? (
-                //       <Icon
-                //         icon="streamline:visible-solid"
-                //         className="h-4 w-4"
-                //         onClick={togglePasswordVisibility}
-                //       />
-                //     ) : (
-                //       <Icon
-                //         icon="streamline:invisible-1-solid"
-                //         className="h-4 w-4"
-                //         onClick={togglePasswordVisibility}
-                //       />
-                //     )}
-                //   </div>
-                // </div>
                 <>
                   <Label htmlFor="salt" className="">
                     Password

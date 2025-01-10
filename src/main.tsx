@@ -10,7 +10,7 @@ import './index.css'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
-import { Provider } from 'jotai'
+import { Provider as JotaiProvider } from 'jotai'
 import { listen } from '@tauri-apps/api/event'
 import { error } from '@tauri-apps/plugin-log'
 
@@ -40,13 +40,11 @@ const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
-    <StrictMode>
-      <Provider>
-        <QueryClientProvider client={queryClient}>
-          <ReactQueryDevtools initialIsOpen={false} />
-          <RouterProvider router={router} />
-        </QueryClientProvider>
-      </Provider>
-    </StrictMode>,
+    <JotaiProvider>
+      <QueryClientProvider client={queryClient}>
+        <ReactQueryDevtools initialIsOpen={false} />
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </JotaiProvider>
   )
 }

@@ -4,11 +4,10 @@ import { zodValidator } from '@tanstack/zod-form-adapter'
 import { CircleAlert } from 'lucide-react';
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
-import { AnimatePresence, useAnimate, usePresence, motion } from "motion/react"
-import * as crypto from 'crypto'
+import { AnimatePresence, motion } from "motion/react"
 
 // components
-import { Dialog, DialogFooter, DialogHeader, DialogContent, DialogDescription, DialogTitle, DialogOverlay } from "../ui/dialog";
+import { Dialog, DialogFooter, DialogHeader, DialogContent, DialogDescription, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { SensitiveTextInput } from "../ui/input";
 import { Button } from "../ui/button";
@@ -24,35 +23,29 @@ import { handleBlur, handleChange, handleFocus } from "@/lib/form";
 
 // hooks
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { warn } from '@tauri-apps/plugin-log';
+import { info, warn } from '@tauri-apps/plugin-log';
 import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
-export function StrongholdPluginInitDialog() {
+export function StrongholdPluginInitDialog({ open = false }: { open?: boolean; }) {
   const { queries, mutations } = useStronghold()
 
-  const [toastIds, setToastIds] = useState<number[]>([])
-
   const { toast, ...toastActions } = useToast()
-
-  useEffect(() => {
-    () => {
-      toastActions.dismissAll()
-      mutations.strongholdPluginInitMutation.reset()
-    }
-  }, [])
 
   const form = useForm({
     defaultValues: {
       salt: '',
     },
     onSubmit: async ({ value }) => {
-      await Promise.allSettled([
-        mutations.strongholdPluginInitMutation.mutateAsync(
+      const [result] = await Promise.allSettled([
+        mutations.pluginInitMutation.mutateAsync(
           value.salt
         )
       ])
+
+      if (result.status !== 'rejected') {
+        form.reset()
+      }
     },
     onSubmitInvalid: ({ value }) => {
       warn(`Invalid StrongholdPluginInitDialog submit: ${JSON.stringify(value)}`)
@@ -65,9 +58,17 @@ export function StrongholdPluginInitDialog() {
   })
 
   useEffect(() => {
-    if (mutations.strongholdPluginInitMutation.error) {
-      const toastId = toast.error((mutations.strongholdPluginInitMutation as any).error, {
-        id: 'strongholdPluginInitMutation.error',
+    () => {
+      form.reset()
+      toastActions.dismissAll()
+      mutations.pluginInitMutation.reset()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (mutations.pluginInitMutation.error) {
+      const toastId = toast.error((mutations.pluginInitMutation as any).error, {
+        id: 'pluginInitMutation.error',
         position: 'top-center',
         onAutoClose: () => toastActions.dismiss(toastId),
         onDismiss: () => toastActions.dismiss(toastId),
@@ -76,12 +77,7 @@ export function StrongholdPluginInitDialog() {
         closeButton: true
       })
     }
-  }, [mutations.strongholdPluginInitMutation.error])
-
-  const open = useMemo(() => {
-    return queries.strongholdPluginSaltFileExistsQuery.data === false ||
-      mutations.strongholdPluginInitMutation.error !== null
-  }, [queries.strongholdPluginSaltFileExistsQuery.data, mutations.strongholdPluginInitMutation.error])
+  }, [mutations.pluginInitMutation.error])
 
   return <div>
     <AnimatePresence>
@@ -164,8 +160,9 @@ export function StrongholdPluginInitDialog() {
             )}
           />
 
-          <Button type="button" onClick={() => {
+          <Button type="button" onClick={(e) => {
             form.setFieldValue('salt', [...Array(35)].map(() => Math.floor(Math.random() * 16).toString(16)).join(''))
+            form.validateField('salt', 'change')
           }}>Random</Button>
         </DialogFooter>
       </form>

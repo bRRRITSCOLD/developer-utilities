@@ -1,4 +1,4 @@
-import { exists, ExistsOptions, writeFile, WriteFileOptions } from "@tauri-apps/plugin-fs";
+import { exists, ExistsOptions, writeFile, WriteFileOptions, remove, RemoveOptions } from "@tauri-apps/plugin-fs";
 
 export class InternalFile {
   name: string
@@ -32,6 +32,13 @@ export class InternalFile {
       throw new Error('Cannot determine contents type')
     }
   
-    return writeFile(`${this.path}`, contents, options)
+    return writeFile(this.path, contents, options)
+  }
+
+  async remove (options?: RemoveOptions) {
+    return await remove(
+      this.path,
+      options
+    )
   }
 }

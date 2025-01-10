@@ -3,37 +3,39 @@ import { appDataDir, appLocalDataDir } from '@tauri-apps/api/path';
 import { exists, BaseDirectory, writeFile, mkdir } from '@tauri-apps/plugin-fs';
 import { info, error, trace } from '@tauri-apps/plugin-log';
 import { invoke } from '@tauri-apps/api/core';
+import Database from '@tauri-apps/plugin-sql';
 
 
 // libs
 import { Resource, ResourceConstructorParams } from './resource';
 import { AppLocalDataDirectory } from './directory';
 import { InternalFile } from './file';
+import { delay } from './common';
 
 export type StrongholdPluginConfig = { saltFilename: 'salt.txt'; baseDir: BaseDirectory.AppLocalData; };
-export type StrongholdPluginConnections = {};
+export type StrongholdPluginConnections = { db: Database };
 export type StrongholdPluginClients = {};
 export type StrongholdPluginResources = {};
 
 // commands
-export const STRONGHOLD_PLUGIN_INIT = 'stronghold_plugin_init'
+export const PLUGIN_INIT = 'plugin_init'
 
 export class StrongholdPluginIpc {
-  public static async strongholdPluginInit () {
-    trace(`${STRONGHOLD_PLUGIN_INIT} command invoke...`)
+  public static async pluginInit () {
+    trace(`${PLUGIN_INIT} command invoke...`)
 
     return await invoke<void>(
-      STRONGHOLD_PLUGIN_INIT,
+      PLUGIN_INIT,
     )
   }
 }
 
 export class StrongholdPlugin extends Resource<StrongholdPluginConfig, StrongholdPluginConnections, StrongholdPluginClients, StrongholdPluginResources> {
-  constructor () {
-    super({ config: { saltFilename: 'salt.txt', baseDir: BaseDirectory.AppLocalData } })
-  }
 
-  #vaultCache: Map<string, StrongholdVault> = new Map()
+  
+  constructor () {
+    super({ config: { saltFilename: 'salt.txt', baseDir: BaseDirectory.AppLocalData }, connections: { db: undefined as unknown as Database} })
+  }
 
   public async appLocalDataDirectory () {
     return await AppLocalDataDirectory.init()
@@ -47,11 +49,12 @@ export class StrongholdPlugin extends Resource<StrongholdPluginConfig, Stronghol
     )
   }
 
-  public async init (salt: string) {
+  public async init (salt?: string) {
+    await delay(5000)
     const appLocalDataDirectory = await this.appLocalDataDirectory()
   
     if (!(await appLocalDataDirectory.exists())) {
-      trace('appLocalDataDirectory does not exist, mkdir...')
+      trace(`[{}StrongholdPlugin#init] appLocalDataDirectory does not exist, mkdir ${appLocalDataDirectory.path}`)
 
       await appLocalDataDirectory.mkdir()
     }
@@ -59,28 +62,46 @@ export class StrongholdPlugin extends Resource<StrongholdPluginConfig, Stronghol
     const saltFile = await this.saltFile(salt)
 
     if (!(await saltFile.exists())) {
-      trace('saltFile does not exist, writeFile...')
+      trace(`[{}StrongholdPlugin#init] saltFile does not exist, writeFile ${await saltFile.path}`)
 
       await saltFile.writeFile()
     }
 
-    return await StrongholdPluginIpc.strongholdPluginInit()
+    this.connections!.db = await Database.load('sqlite:developer-utilities.stronghold.db');
+  
+    return await StrongholdPluginIpc.pluginInit()
   }
 
   async addVault (params: { name: string; password: string; }): Promise<StrongholdVault>  {
     const strongholdVault = await StrongholdVault.init(params)
 
-    this.#vaultCache.set(params.name, strongholdVault)
+    await this.connections?.db.execute(
+      "INSERT into vault (name) VALUES ($1);",
+      [params.name]
+    )
 
     return strongholdVault
   }
 
-  async getVaultNames (): Promise<string[]> {
-    return []
+  async listVaults (): Promise<string[]> {
+    const data = await this.connections?.db.select<{ id: number; name: string; }[]>(
+      "SELECT * FROM vault;"
+    )
+  
+    return (data || []).map(item => item.name)
   }
 
-  async getVault (name: string): Promise<StrongholdVault> {
-    return new StrongholdVault({} as any)
+  async getVault (name: string, password: string): Promise<StrongholdVault> {
+    const data = await this.connections?.db.select<{ id: number; name: string; }>(
+      "SELECT * FROM vault WHERE name = $1;",
+      [name]
+    )
+
+    if (!data) {
+      throw new Error('Vault does not exist')
+    }
+  
+    return await StrongholdVault.init({ name, password })
   }
 
   async deleteVault (name: string): Promise<boolean> {
@@ -133,6 +154,8 @@ export class StrongholdVault extends Resource<StrongholdVaultConfig, StrongholdV
 
     await this.clients!.stronghold.getStore().insert(key, data);
 
+    await this.connections!.stronghold.save()
+
     return true
   }
 
@@ -147,7 +170,9 @@ export class StrongholdVault extends Resource<StrongholdVaultConfig, StrongholdV
   }
 
   public async deleteRecord(key: string): Promise<boolean> {
-    await this.clients!.stronghold.getStore().remove(key);
+    await this.clients!.stronghold.getStore().remove(key)
+
+    await this.connections!.stronghold.save()
 
     return true;
   }
