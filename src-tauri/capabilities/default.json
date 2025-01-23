@@ -1,0 +1,23 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "core:window:allow-show",
+    "core:window:allow-center",
+    "stronghold:default",
+    "log:default",
+    "fs:default",
+    "fs:allow-applocaldata-read",
+    "fs:allow-applocaldata-read-recursive",
+    "fs:allow-applocaldata-meta",
+    "fs:allow-applocaldata-write",
+    "fs:allow-applocaldata-write-recursive",
+    "sql:default"
+  ]
+}
