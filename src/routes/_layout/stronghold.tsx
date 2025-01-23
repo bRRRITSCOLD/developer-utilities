@@ -1,42 +1,53 @@
-import { StrongholdPluginInitDialog } from '@/components/stronghold/stronghold-plugin-init-dialog'
-import { TextLoader } from '@/components/ui/loader'
-import { useStronghold } from '@/stores/stronghold'
-import { createFileRoute } from '@tanstack/react-router'
+// node_modules
+import { Plus } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
+import { createFileRoute } from '@tanstack/react-router'
+
+// components
+import { StrongholdPluginInitDialog } from '@/components/stronghold/stronghold-plugin-init-dialog'
+import { Button } from '@/components/ui/button'
+import { TextLoader } from '@/components/ui/loader'
+
+// stores
+import { useStrongholdVaults } from '@/stores/stronghold/stronghold-vaults'
 
 export const Route = createFileRoute('/_layout/stronghold')({
   component: RouteComponent,
 })
 
-function RouteComponent() {
-  const { queries, mutations } = useStronghold()
+const StrongholdVaults = () => {
+  const { queries: strongholdVaultsQueries } = useStrongholdVaults()
 
-  const open = useMemo(() => {
-    return queries.pluginSaltFileExistsQuery.data === false ||
-      mutations.pluginInitMutation.error !== null
-  }, [queries.pluginSaltFileExistsQuery.data, mutations.pluginInitMutation.error])
-
-  const loading = useMemo(() => {
-    return queries.pluginSaltFilePathQuery.isFetching || queries.pluginSaltFileExistsQuery.isFetching || queries.listVaultsQuery.isFetching
-  }, [queries.pluginSaltFilePathQuery.isFetching, queries.pluginSaltFileExistsQuery.isFetching, queries.listVaultsQuery.isFetching])
-
-  useEffect(() => {
-    (async () => {
-      if (queries.pluginSaltFileExistsQuery.data) {
-        await mutations.pluginInitMutation.mutateAsync('')
-      }
-    })()
-  }, [queries.pluginSaltFileExistsQuery.data])
-
-  let content
-  if (loading) {
-    content = <TextLoader />
-  } else {
-    content = <div>Hello "/__layout/stronghold"!</div>
+  let vaults
+  if (strongholdVaultsQueries.listVaults.isFetching) {
+    vaults = <TextLoader text='fetching vaults' />
+  } else if (strongholdVaultsQueries.listVaults.error) {
+    vaults = <div>{strongholdVaultsQueries.listVaults.error.message}</div>
+  } else if (strongholdVaultsQueries.listVaults.data && strongholdVaultsQueries.listVaults.data.length) {
+    vaults = strongholdVaultsQueries.listVaults.data.map(vaultName =>
+      <div>{vaultName}</div>
+    )
+  } else if (strongholdVaultsQueries.listVaults.data && !strongholdVaultsQueries.listVaults.data.length) {
+    vaults = <div>No vaults found</div>
   }
 
-  return <section className="">
-    <StrongholdPluginInitDialog open={open} />
-    {content}
-  </section>
+  return (
+    <div className="flex flex-col w-[95%]">
+        <div className="flex flex-row w-full justify-center">
+          <Button><Plus /></Button>
+        </div>
+        <div className="flex flex-row w-full justify-center">
+          {vaults}
+        </div>
+    </div>
+  )
+}
+
+function RouteComponent() {
+  return <main>
+    <StrongholdPluginInitDialog />
+    <section>
+      <StrongholdVaults />
+    </section>
+  </main>
 }

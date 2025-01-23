@@ -1,14 +1,10 @@
-import { StrongholdPluginInitDialog } from '@/components/stronghold/stronghold-plugin-init-dialog'
-import { useStronghold } from '@/stores/stronghold'
-import { Outlet, createFileRoute, useRouter, useRouterState } from '@tanstack/react-router'
-import { Fragment, useEffect, useMemo } from 'react'
+import { Outlet, createFileRoute, useRouterState } from '@tanstack/react-router'
+import { Fragment, useMemo } from 'react'
 import { AppSidebar } from "@/components/app/app-sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
