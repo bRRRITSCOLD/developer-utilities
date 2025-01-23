@@ -50,7 +50,7 @@ export class StrongholdPlugin extends Resource<StrongholdPluginConfig, Stronghol
   }
 
   public async init (salt?: string) {
-    await delay(5000)
+    console.log('INIT')
     const appLocalDataDirectory = await this.appLocalDataDirectory()
   
     if (!(await appLocalDataDirectory.exists())) {

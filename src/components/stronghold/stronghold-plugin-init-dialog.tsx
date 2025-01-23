@@ -13,7 +13,7 @@ import { SensitiveTextInput } from "../ui/input";
 import { Button } from "../ui/button";
 
 // stores
-import { useStronghold } from "@/stores/stronghold"
+import { useStrongholdPlugin } from "@/stores/stronghold/stronghold-plugin"
 
 // schemas
 import { strongholdPluginInitDialogFormSchema } from "@/schemas/stronghold";
@@ -23,12 +23,17 @@ import { handleBlur, handleChange, handleFocus } from "@/lib/form";
 
 // hooks
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { info, warn } from '@tauri-apps/plugin-log';
-import { useEffect, useMemo, useState } from 'react';
+import { warn } from '@tauri-apps/plugin-log';
+import { useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-export function StrongholdPluginInitDialog({ open = false }: { open?: boolean; }) {
-  const { queries, mutations } = useStronghold()
+export function StrongholdPluginInitDialog() {
+  const { queries, mutations } = useStrongholdPlugin()
+
+  const open = useMemo(() => {
+    return queries.saltFileExists.data === false ||
+      mutations.init.error !== null
+  }, [queries.saltFileExists.data, mutations.init.error])
 
   const { toast, ...toastActions } = useToast()
 
@@ -38,7 +43,7 @@ export function StrongholdPluginInitDialog({ open = false }: { open?: boolean; }
     },
     onSubmit: async ({ value }) => {
       const [result] = await Promise.allSettled([
-        mutations.pluginInitMutation.mutateAsync(
+        mutations.init.mutateAsync(
           value.salt
         )
       ])
@@ -58,17 +63,25 @@ export function StrongholdPluginInitDialog({ open = false }: { open?: boolean; }
   })
 
   useEffect(() => {
-    () => {
+    (async () => {
+      if (queries.saltFileExists.data) {
+        await mutations.init.mutateAsync('')
+      }
+    })()
+  }, [queries.saltFileExists.data])
+
+  useEffect(() => {
+    return () => {
       form.reset()
       toastActions.dismissAll()
-      mutations.pluginInitMutation.reset()
+      mutations.init.reset()
     }
   }, [])
 
   useEffect(() => {
-    if (mutations.pluginInitMutation.error) {
-      const toastId = toast.error((mutations.pluginInitMutation as any).error, {
-        id: 'pluginInitMutation.error',
+    if (mutations.init.error) {
+      const toastId = toast.error((mutations.init as any).error, {
+        id: 'init.error',
         position: 'top-center',
         onAutoClose: () => toastActions.dismiss(toastId),
         onDismiss: () => toastActions.dismiss(toastId),
@@ -77,7 +90,7 @@ export function StrongholdPluginInitDialog({ open = false }: { open?: boolean; }
         closeButton: true
       })
     }
-  }, [mutations.pluginInitMutation.error])
+  }, [mutations.init.error])
 
   return <div>
     <AnimatePresence>
