@@ -18,14 +18,14 @@ export type StrongholdPluginClients = {};
 export type StrongholdPluginResources = {};
 
 // commands
-export const PLUGIN_INIT = 'plugin_init'
+export const STRONGHOLD_PLUGIN_INIT = 'stronghold_plugin_init'
 
 export class StrongholdPluginIpc {
-  public static async pluginInit () {
-    trace(`${PLUGIN_INIT} command invoke...`)
+  public static async init () {
+    trace(`${STRONGHOLD_PLUGIN_INIT} command invoke...`)
 
     return await invoke<void>(
-      PLUGIN_INIT,
+      STRONGHOLD_PLUGIN_INIT,
     )
   }
 }
@@ -69,7 +69,7 @@ export class StrongholdPlugin extends Resource<StrongholdPluginConfig, Stronghol
 
     this.connections!.db = await Database.load('sqlite:developer-utilities.stronghold.db');
   
-    return await StrongholdPluginIpc.pluginInit()
+    return await StrongholdPluginIpc.init()
   }
 
   async addVault (params: { name: string; password: string; }): Promise<StrongholdVault>  {

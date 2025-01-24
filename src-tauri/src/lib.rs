@@ -32,7 +32,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
-          commands::stronghold::plugin_init
+          commands::stronghold::stronghold_plugin_init
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

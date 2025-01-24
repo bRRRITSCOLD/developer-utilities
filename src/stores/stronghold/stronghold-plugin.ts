@@ -62,9 +62,9 @@ export const useStrongholdPlugin = () => {
       await queryClient.invalidateQueries({ queryKey: saltFilePathQueryKey })
     },
     onError: (err: Error | string) => {
-      error(`pluginInitMutation onError err ${err}`)
+      error(`useStrongholdPlugin init mutation onError err ${err}`)
     },
-    scope: { id: `pluginInitMutation` },
+    scope: { id: `useStrongholdPlugin init mutation` },
   }, queryClient)
 
   // TODO: needs to remove vaults too (pop up/dialog needed for user to confirm as the action is nuclear)
@@ -83,9 +83,9 @@ export const useStrongholdPlugin = () => {
       await queryClient.invalidateQueries({ queryKey: saltFilePathQueryKey })
     },
     onError: (err: Error | string) => {
-      error(`removePluginSaltFileMutation onError err ${err}`)
+      error(`useStrongholdPlugin removeSaltFile mutation onError err ${err}`)
     },
-    scope: { id: `removePluginSaltFileMutation` },
+    scope: { id: `useStrongholdPlugin removeSaltFile mutation` },
   }, queryClient)
 
   return new Store({

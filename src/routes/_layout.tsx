@@ -19,33 +19,53 @@ export const Route = createFileRoute('/_layout')({
   component: LayoutComponent,
 })
 
-const breadcrumbs = [
+const rootBreadcrumbs = [
   {
-    path: '',
-    breadcrumb: 'Utilities'
+    path: '/',
+    breadcrumb: 'Home'
   },
   {
-    path: 'stronghold',
+    path: '/settings',
+    breadcrumb: 'Settings'
+  }
+]
+
+const otherBreadcrumbs = [
+  {
+    path: '/stronghold',
     breadcrumb: 'Stronghold'
   },
   {
-    path: 'jwt',
-    breadcrumb: 'JWT'
+    path: '/stronghold/settings',
+    breadcrumb: 'Settings'
+  },
+  {
+    path: '/identity-management',
+    breadcrumb: 'Identity Management'
+  },
+  {
+    path: '/identity-management/settings',
+    breadcrumb: 'Settings'
   }
 ]
 
 function LayoutComponent() {
   const router = useRouterState()
 
-  const pathParts = useMemo(() => {
-    const split = router.location.href.split('/')
-    return (split[0] === '' && split[1] === '' ? split.slice(1) : split).reduce((b: { path: string, breadcrumb: string; }[], part) => {
-      const found = breadcrumbs.find(item => item.path === part)
-      if (found) {
-        b.push(found)
-      }
-      return b
-    }, [])
+  const pathcrumbs = useMemo(() => {
+    if (router.location.href === '/' || router.location.href === '') {
+      return [rootBreadcrumbs[0]]
+    }
+
+    const otherPathcrumbs = otherBreadcrumbs.filter(item => router.location.href.includes(item.path))
+
+    if (otherPathcrumbs.length > 0) {
+      return otherPathcrumbs
+    }
+
+    const rootPathcrumbs = rootBreadcrumbs.filter(item => router.location.href.includes(item.path))
+
+    return rootPathcrumbs
   }, [router.location.href])
 
   return (
@@ -60,14 +80,14 @@ function LayoutComponent() {
               <Breadcrumb>
                 <BreadcrumbList>
                   {
-                    pathParts.map((item, i) =>
+                    pathcrumbs.map((item, i) =>
                       <Fragment key={i}>
                         <BreadcrumbItem className="hidden md:block">
                             <Link href={item.path}>
                               {item.breadcrumb}
                             </Link>
                           </BreadcrumbItem>
-                        {i === pathParts.length - 1 ? null : <BreadcrumbSeparator className="hidden md:block" />}
+                        {i === pathcrumbs.length - 1 ? null : <BreadcrumbSeparator className="hidden md:block" />}
                       </Fragment>
                     )
                   }

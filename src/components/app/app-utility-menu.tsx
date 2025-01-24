@@ -23,26 +23,18 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Link } from "@tanstack/react-router"
+import { useUtilityLinks } from "@/hooks/app/use-app-utility-links"
 
-export function AppUtilities({
-  utilities,
-}: {
-  utilities: {
-    name: string
-    url: string
-    icon: LucideIcon
-  }[]
-}) {
+export function AppUtilityMenu() {
+  const { activeUtilityLink } = useUtilityLinks()
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel><Link href="/">Utilities</Link></SidebarGroupLabel>
       <SidebarMenu>
-        {utilities.map((item) => (
-          <SidebarMenuItem key={item.name}>
+        {activeUtilityLink.links.map((item) => (
+          <SidebarMenuItem key={item.label}>
             <SidebarMenuButton asChild>
-              <Link href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
+              <Link href={item.href}>
+                <span>{item.label}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
