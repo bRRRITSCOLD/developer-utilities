@@ -11,7 +11,7 @@ import { TextLoader } from '@/components/ui/loader'
 // stores
 import { useStrongholdVaults } from '@/stores/stronghold/stronghold-vaults'
 
-export const Route = createFileRoute('/_layout/stronghold')({
+export const Route = createFileRoute('/_layout/stronghold/')({
   component: RouteComponent,
 })
 
@@ -20,34 +20,38 @@ const StrongholdVaults = () => {
 
   let vaults
   if (strongholdVaultsQueries.listVaults.isFetching) {
-    vaults = <TextLoader text='fetching vaults' />
+    vaults = <TextLoader text="fetching vaults" />
   } else if (strongholdVaultsQueries.listVaults.error) {
     vaults = <div>{strongholdVaultsQueries.listVaults.error.message}</div>
-  } else if (strongholdVaultsQueries.listVaults.data && strongholdVaultsQueries.listVaults.data.length) {
-    vaults = strongholdVaultsQueries.listVaults.data.map(vaultName =>
+  } else if (
+    strongholdVaultsQueries.listVaults.data &&
+    strongholdVaultsQueries.listVaults.data.length
+  ) {
+    vaults = strongholdVaultsQueries.listVaults.data.map((vaultName) => (
       <div>{vaultName}</div>
-    )
-  } else if (strongholdVaultsQueries.listVaults.data && !strongholdVaultsQueries.listVaults.data.length) {
+    ))
+  } else if (
+    strongholdVaultsQueries.listVaults.data &&
+    !strongholdVaultsQueries.listVaults.data.length
+  ) {
     vaults = <div>No vaults found</div>
   }
 
   return (
     <div className="flex flex-col w-[95%]">
-        <div className="flex flex-row w-full justify-center">
-          <Button><Plus /></Button>
-        </div>
-        <div className="flex flex-row w-full justify-center">
-          {vaults}
-        </div>
+      <div className="flex flex-row w-full justify-center"></div>
+      <div className="flex flex-row w-full justify-center">{vaults}</div>
     </div>
   )
 }
 
 function RouteComponent() {
-  return <main>
-    <StrongholdPluginInitDialog />
-    <section>
-      <StrongholdVaults />
-    </section>
-  </main>
+  return (
+    <main>
+      <StrongholdPluginInitDialog />
+      <section>
+        <StrongholdVaults />
+      </section>
+    </main>
+  )
 }

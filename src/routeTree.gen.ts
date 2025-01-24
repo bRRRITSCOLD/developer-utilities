@@ -13,8 +13,11 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
-import { Route as LayoutStrongholdImport } from './routes/_layout/stronghold'
-import { Route as LayoutJwtImport } from './routes/_layout/jwt'
+import { Route as LayoutSettingsImport } from './routes/_layout/settings'
+import { Route as LayoutStrongholdIndexImport } from './routes/_layout/stronghold/index'
+import { Route as LayoutIdentityManagementIndexImport } from './routes/_layout/identity-management/index'
+import { Route as LayoutStrongholdSettingsImport } from './routes/_layout/stronghold/settings'
+import { Route as LayoutIdentityManagementSettingsImport } from './routes/_layout/identity-management/settings'
 
 // Create/Update Routes
 
@@ -29,17 +32,37 @@ const LayoutIndexRoute = LayoutIndexImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutStrongholdRoute = LayoutStrongholdImport.update({
-  id: '/stronghold',
-  path: '/stronghold',
+const LayoutSettingsRoute = LayoutSettingsImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutJwtRoute = LayoutJwtImport.update({
-  id: '/jwt',
-  path: '/jwt',
+const LayoutStrongholdIndexRoute = LayoutStrongholdIndexImport.update({
+  id: '/stronghold/',
+  path: '/stronghold/',
   getParentRoute: () => LayoutRoute,
 } as any)
+
+const LayoutIdentityManagementIndexRoute =
+  LayoutIdentityManagementIndexImport.update({
+    id: '/identity-management/',
+    path: '/identity-management/',
+    getParentRoute: () => LayoutRoute,
+  } as any)
+
+const LayoutStrongholdSettingsRoute = LayoutStrongholdSettingsImport.update({
+  id: '/stronghold/settings',
+  path: '/stronghold/settings',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutIdentityManagementSettingsRoute =
+  LayoutIdentityManagementSettingsImport.update({
+    id: '/identity-management/settings',
+    path: '/identity-management/settings',
+    getParentRoute: () => LayoutRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -52,18 +75,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutImport
       parentRoute: typeof rootRoute
     }
-    '/_layout/jwt': {
-      id: '/_layout/jwt'
-      path: '/jwt'
-      fullPath: '/jwt'
-      preLoaderRoute: typeof LayoutJwtImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/stronghold': {
-      id: '/_layout/stronghold'
-      path: '/stronghold'
-      fullPath: '/stronghold'
-      preLoaderRoute: typeof LayoutStrongholdImport
+    '/_layout/settings': {
+      id: '/_layout/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof LayoutSettingsImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/': {
@@ -73,21 +89,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/identity-management/settings': {
+      id: '/_layout/identity-management/settings'
+      path: '/identity-management/settings'
+      fullPath: '/identity-management/settings'
+      preLoaderRoute: typeof LayoutIdentityManagementSettingsImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/stronghold/settings': {
+      id: '/_layout/stronghold/settings'
+      path: '/stronghold/settings'
+      fullPath: '/stronghold/settings'
+      preLoaderRoute: typeof LayoutStrongholdSettingsImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/identity-management/': {
+      id: '/_layout/identity-management/'
+      path: '/identity-management'
+      fullPath: '/identity-management'
+      preLoaderRoute: typeof LayoutIdentityManagementIndexImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/stronghold/': {
+      id: '/_layout/stronghold/'
+      path: '/stronghold'
+      fullPath: '/stronghold'
+      preLoaderRoute: typeof LayoutStrongholdIndexImport
+      parentRoute: typeof LayoutImport
+    }
   }
 }
 
 // Create and export the route tree
 
 interface LayoutRouteChildren {
-  LayoutJwtRoute: typeof LayoutJwtRoute
-  LayoutStrongholdRoute: typeof LayoutStrongholdRoute
+  LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutIdentityManagementSettingsRoute: typeof LayoutIdentityManagementSettingsRoute
+  LayoutStrongholdSettingsRoute: typeof LayoutStrongholdSettingsRoute
+  LayoutIdentityManagementIndexRoute: typeof LayoutIdentityManagementIndexRoute
+  LayoutStrongholdIndexRoute: typeof LayoutStrongholdIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutJwtRoute: LayoutJwtRoute,
-  LayoutStrongholdRoute: LayoutStrongholdRoute,
+  LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
+  LayoutIdentityManagementSettingsRoute: LayoutIdentityManagementSettingsRoute,
+  LayoutStrongholdSettingsRoute: LayoutStrongholdSettingsRoute,
+  LayoutIdentityManagementIndexRoute: LayoutIdentityManagementIndexRoute,
+  LayoutStrongholdIndexRoute: LayoutStrongholdIndexRoute,
 }
 
 const LayoutRouteWithChildren =
@@ -95,36 +145,61 @@ const LayoutRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '': typeof LayoutRouteWithChildren
-  '/jwt': typeof LayoutJwtRoute
-  '/stronghold': typeof LayoutStrongholdRoute
+  '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
+  '/identity-management/settings': typeof LayoutIdentityManagementSettingsRoute
+  '/stronghold/settings': typeof LayoutStrongholdSettingsRoute
+  '/identity-management': typeof LayoutIdentityManagementIndexRoute
+  '/stronghold': typeof LayoutStrongholdIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '/jwt': typeof LayoutJwtRoute
-  '/stronghold': typeof LayoutStrongholdRoute
+  '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
+  '/identity-management/settings': typeof LayoutIdentityManagementSettingsRoute
+  '/stronghold/settings': typeof LayoutStrongholdSettingsRoute
+  '/identity-management': typeof LayoutIdentityManagementIndexRoute
+  '/stronghold': typeof LayoutStrongholdIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_layout': typeof LayoutRouteWithChildren
-  '/_layout/jwt': typeof LayoutJwtRoute
-  '/_layout/stronghold': typeof LayoutStrongholdRoute
+  '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/identity-management/settings': typeof LayoutIdentityManagementSettingsRoute
+  '/_layout/stronghold/settings': typeof LayoutStrongholdSettingsRoute
+  '/_layout/identity-management/': typeof LayoutIdentityManagementIndexRoute
+  '/_layout/stronghold/': typeof LayoutStrongholdIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/jwt' | '/stronghold' | '/'
+  fullPaths:
+    | ''
+    | '/settings'
+    | '/'
+    | '/identity-management/settings'
+    | '/stronghold/settings'
+    | '/identity-management'
+    | '/stronghold'
   fileRoutesByTo: FileRoutesByTo
-  to: '/jwt' | '/stronghold' | '/'
+  to:
+    | '/settings'
+    | '/'
+    | '/identity-management/settings'
+    | '/stronghold/settings'
+    | '/identity-management'
+    | '/stronghold'
   id:
     | '__root__'
     | '/_layout'
-    | '/_layout/jwt'
-    | '/_layout/stronghold'
+    | '/_layout/settings'
     | '/_layout/'
+    | '/_layout/identity-management/settings'
+    | '/_layout/stronghold/settings'
+    | '/_layout/identity-management/'
+    | '/_layout/stronghold/'
   fileRoutesById: FileRoutesById
 }
 
@@ -152,21 +227,36 @@ export const routeTree = rootRoute
     "/_layout": {
       "filePath": "_layout.tsx",
       "children": [
-        "/_layout/jwt",
-        "/_layout/stronghold",
-        "/_layout/"
+        "/_layout/settings",
+        "/_layout/",
+        "/_layout/identity-management/settings",
+        "/_layout/stronghold/settings",
+        "/_layout/identity-management/",
+        "/_layout/stronghold/"
       ]
     },
-    "/_layout/jwt": {
-      "filePath": "_layout/jwt.tsx",
-      "parent": "/_layout"
-    },
-    "/_layout/stronghold": {
-      "filePath": "_layout/stronghold.tsx",
+    "/_layout/settings": {
+      "filePath": "_layout/settings.tsx",
       "parent": "/_layout"
     },
     "/_layout/": {
       "filePath": "_layout/index.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/identity-management/settings": {
+      "filePath": "_layout/identity-management/settings.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/stronghold/settings": {
+      "filePath": "_layout/stronghold/settings.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/identity-management/": {
+      "filePath": "_layout/identity-management/index.tsx",
+      "parent": "/_layout"
+    },
+    "/_layout/stronghold/": {
+      "filePath": "_layout/stronghold/index.tsx",
       "parent": "/_layout"
     }
   }

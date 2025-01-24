@@ -39,9 +39,9 @@ export const useStrongholdVaults = () => {
       await queryClient.invalidateQueries({ queryKey: listVaultsQueryKey })
     },
     onError: (err: Error | string) => {
-      error(`pluginInitMutation onError err ${err}`)
+      error(`useStrongholdVaults createVault mutation onError err ${err}`)
     },
-    scope: { id: `pluginInitMutation` },
+    scope: { id: `useStrongholdVaults createVault mutation` },
   })
 
   return new Store({

@@ -6,13 +6,13 @@ import {
   ChevronsUpDown,
   CreditCard,
   LogOut,
+  Plus,
   Sparkles,
 } from "lucide-react"
 
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage,
 } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -30,18 +31,18 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { MouseEvent as ReactMouseEvent } from "react"
+import { useUtilityLinks } from "@/hooks/app/use-app-utility-links"
+import { Link, useRouter, useRouterState } from "@tanstack/react-router"
 
-export function AppMenu({ app, menu }: {
-  app: {
-    name: string;
-    abbreviation: string;
-  };
-  menu: {
-    label: string;
-    onClick: (e: ReactMouseEvent) => void;
-  }[]
-}) {
+export function AppMenu() {
   const { isMobile } = useSidebar()
+
+  const router = useRouter()
+
+  const {
+    activeUtilityLink,
+    inactiveUtilityLinks
+  } = useUtilityLinks()
 
   return (
     <SidebarMenu>
@@ -53,41 +54,39 @@ export function AppMenu({ app, menu }: {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">{app.abbreviation}</AvatarFallback>
+                <AvatarFallback className="rounded-lg"><activeUtilityLink.icon /></AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{app.name}</span>
+                <span className="truncate font-semibold">{activeUtilityLink.label}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            align="start"
             side={isMobile ? "bottom" : "right"}
-            align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">{app.abbreviation}</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{app.name}</span>
-                </div>
-              </div>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Utilities
             </DropdownMenuLabel>
+            {inactiveUtilityLinks.map((inactiveUtilityLink, index) => (
+              <DropdownMenuItem
+                key={inactiveUtilityLink.label}
+                onClick={() => router.navigate({ to: inactiveUtilityLink.href })}
+                className="gap-2 p-2"
+              >
+                <div className="flex size-6 items-center justify-center rounded-sm border">
+                  <inactiveUtilityLink.icon className="size-4 shrink-0" />
+                </div>
+                {inactiveUtilityLink.label}
+                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+              </DropdownMenuItem>
+            ))}
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              {
-                menu.map((item) =>
-                  <DropdownMenuItem key={item.label} onClick={item.onClick}>
-                    <Sparkles />
-                    {item.label}
-                  </DropdownMenuItem>
-                )
-              }
-            </DropdownMenuGroup>
+            <div className="gap-3 p-3">
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

@@ -4,7 +4,7 @@ use log::{error, info};
 use tauri::{AppHandle, Error, Manager};
 
 #[tauri::command]
-pub fn plugin_init(app_handle: AppHandle) -> Result<(), String> {
+pub fn stronghold_plugin_init(app_handle: AppHandle) -> Result<(), String> {
     let app_local_data_dir_path = match app_handle.path().app_local_data_dir() {
         Ok(path_buf) => path_buf,
         Err(err) => return Err(err.to_string()),
